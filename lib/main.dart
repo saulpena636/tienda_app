@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         title: 'Tienda',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
+            seedColor: Color.fromARGB(0, 77, 160, 255),
           ), // Azul como base
           useMaterial3: true, // O false si estás usando Material 2
         ),
@@ -43,10 +43,27 @@ class Tienda extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: colors.primary,
-          title: Text(
-            "Tienda de compras",
-            style: TextStyle(color: Colors.white),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.network(
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sears_Logo_1994.svg/330px-Sears_Logo_1994.svg.png',
+                height: 40,
+                color: Colors.white,
+                colorBlendMode: BlendMode.srcIn,
+              ),
+              const SizedBox(width: 2),
+              const Text(
+                '2',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 45,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
+
           bottom: TabBar(
             indicatorColor: Colors.white,
             labelColor: Colors.white,

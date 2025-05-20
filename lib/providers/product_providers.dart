@@ -145,6 +145,18 @@ class ProductProviders extends ChangeNotifier {
     }
   }
 
+  Future<void> emptyCart() async {
+    try {
+      cartProducts.clear();
+      print(cartProducts.length);
+      print(cartProducts);
+      notifyListeners();
+    } catch (e) {
+      //print("Error updating favorite recipes $e");
+      notifyListeners();
+    }
+  }
+
   // New function to save a recipe
   Future<bool> saveRecipe(ProductModel recipe) async {
     // Assuming your save endpoint is the same or adjust accordingly

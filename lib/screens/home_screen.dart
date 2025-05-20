@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
 
     if (recipesProvider.recipes.isEmpty) {
       recipesProvider.fetchRecipes();
-      print("Se cargaron las recetas");
+      print("Se cargaron los productos");
     }
 
     final colors = Theme.of(context).colorScheme;
@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
           if (provider.isLoading) {
             return Center(child: CircularProgressIndicator());
           } else if (provider.recipes.isEmpty) {
-            return Center(child: Text('No hay recetas'));
+            return Center(child: Text('No hay productos'));
           }
 
           return ListView.builder(

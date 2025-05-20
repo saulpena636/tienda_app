@@ -9,25 +9,109 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //return Center(child: Text("Favoritos"));
     return Scaffold(
       backgroundColor: Colors.white,
-      //appBar: AppBar(),
       body: Consumer<ProductProviders>(
         builder: (context, recipeProviders, child) {
+          double getTotal(Map<ProductModel, int> cartProducts) {
+            double total = 0.0;
+            cartProducts.forEach((producto, cantidad) {
+              total += producto.precio * cantidad;
+            });
+            return total;
+          }
+
           final cartEntries = recipeProviders.cartProducts.entries.toList();
+          final total = getTotal(recipeProviders.cartProducts);
 
           return cartEntries.isEmpty
-              ? Center(child: Text("Sin productos guardados"))
-              : ListView.builder(
-                itemCount: cartEntries.length,
-                itemBuilder: (context, index) {
-                  final entry = cartEntries[index];
-                  final recipe = entry.key;
-                  final cantidad = entry.value;
+              ? Center(child: Text("Ningun producto añadido al carrito"))
+              : Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: cartEntries.length,
+                      itemBuilder: (context, index) {
+                        final entry = cartEntries[index];
+                        final recipe = entry.key;
+                        final cantidad = entry.value;
 
-                  return CartProductsCard(recipe: recipe, cantidad: cantidad);
-                },
+                        return CartProductsCard(
+                          recipe: recipe,
+                          cantidad: cantidad,
+                          total: total,
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      border: Border(
+                        top: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Total:",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              "\$${total.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await Provider.of<ProductProviders>(
+                                context,
+                                listen: false,
+                              ).emptyCart();
+
+                              // Opcional: Mostrar un mensaje al usuario
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Productos comprados!!"),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              minimumSize: const Size.fromHeight(60),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Comprar ahora!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               );
         },
       ),
@@ -37,10 +121,13 @@ class CartScreen extends StatelessWidget {
 
 class CartProductsCard extends StatelessWidget {
   final ProductModel recipe;
+  final int cantidad;
+  final double total;
   const CartProductsCard({
     super.key,
     required this.recipe,
-    required int cantidad,
+    required this.cantidad,
+    required this.total,
   });
 
   @override
@@ -72,21 +159,37 @@ class CartProductsCard extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+              Row(
                 children: [
-                  Text(
-                    recipe.name,
-                    style: TextStyle(fontSize: 18, fontFamily: 'QuikSand'),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        recipe.name,
+                        style: TextStyle(fontSize: 18, fontFamily: 'QuikSand'),
+                      ),
+                      Container(
+                        color: colors.primary,
+                        height: 2,
+                        width: size.width * 0.5,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        "\$${recipe.precio}",
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
                   ),
-                  Container(
-                    color: colors.primary,
-                    height: 2,
-                    width: size.width * 0.5,
+                  Column(
+                    children: [
+                      Text("Cant: $cantidad", style: TextStyle(fontSize: 14)),
+                      Text(
+                        "\$${(cantidad * recipe.precio).toStringAsFixed(2)}",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 12),
-                  Text("\$${recipe.precio}", style: TextStyle(fontSize: 14)),
                 ],
               ),
             ],

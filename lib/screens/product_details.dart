@@ -34,6 +34,11 @@ class RecipeDetailsState extends State<RecipeDetails> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isInCart = Provider.of<ProductProviders>(
+      context,
+      listen: true, // para que se reconstruya cuando cambia
+    ).cartProducts.containsKey(widget.recipesData);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colors.primary,
@@ -48,89 +53,7 @@ class RecipeDetailsState extends State<RecipeDetails> {
           },
           icon: Icon(Icons.arrow_back),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (context) {
-                  return StatefulBuilder(
-                    builder:
-                        (context, setState) => Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Selecciona la cantidad',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      if (cantidad > 1) {
-                                        setState(() {
-                                          cantidad--;
-                                        });
-                                      }
-                                    },
-                                    icon: const Icon(Icons.remove),
-                                  ),
-                                  Text(
-                                    '$cantidad',
-                                    style: const TextStyle(fontSize: 24),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        cantidad++;
-                                      });
-                                    },
-                                    icon: const Icon(Icons.add),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context); // Cierra el modal
-                                  // Aquí llamas a tu lógica para agregar al carrito con cantidad
-                                  print(
-                                    'Agregar al carrito con cantidad: $cantidad',
-                                  );
-                                },
-                                child: const Text('Agregar al carrito'),
-                              ),
-                            ],
-                          ),
-                        ),
-                  );
-                },
-              );
-            },
-
-            icon: AnimatedSwitcher(
-              duration: Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              child: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: Colors.white,
-                key: ValueKey<bool>(isFavorite),
-              ),
-            ),
-          ),
-        ],
+        actions: [],
       ),
 
       body: Padding(
@@ -264,89 +187,118 @@ class RecipeDetailsState extends State<RecipeDetails> {
                     ),
                   ),
                   SizedBox(height: 10),
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(16),
+                        if (isInCart) {
+                          // Si ya está en el carrito, eliminarlo directamente
+                          Provider.of<ProductProviders>(
+                            context,
+                            listen: false,
+                          ).toggleCartStatus(
+                            widget.recipesData,
+                            0,
+                          ); // cantidad 0 o ignora la cantidad
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Producto eliminado del carrito"),
                             ),
-                          ),
-                          builder: (context) {
-                            return StatefulBuilder(
-                              builder:
-                                  (context, setState) => Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                          'Selecciona la cantidad',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            IconButton(
-                                              onPressed: () {
-                                                if (cantidad > 1) {
-                                                  setState(() {
-                                                    cantidad--;
-                                                  });
-                                                }
-                                              },
-                                              icon: const Icon(Icons.remove),
+                          );
+                        } else {
+                          // Si no está en el carrito, mostrar el modal para seleccionar cantidad
+                          showModalBottomSheet(
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                            ),
+                            builder: (context) {
+                              int cantidad = 1;
+                              return StatefulBuilder(
+                                builder:
+                                    (context, setState) => Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            'Selecciona la cantidad',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            Text(
-                                              '$cantidad',
-                                              style: const TextStyle(
-                                                fontSize: 24,
+                                          ),
+                                          const SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              IconButton(
+                                                onPressed: () {
+                                                  if (cantidad > 1) {
+                                                    setState(() {
+                                                      cantidad--;
+                                                    });
+                                                  }
+                                                },
+                                                icon: const Icon(Icons.remove),
                                               ),
-                                            ),
-                                            IconButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  cantidad++;
-                                                });
-                                              },
-                                              icon: const Icon(Icons.add),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 20),
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            await Provider.of<ProductProviders>(
-                                              context,
-                                              listen: false,
-                                            ).toggleCartStatus(
-                                              widget.recipesData,
-                                              cantidad,
-                                            );
-                                            setState(() {
-                                              cartAdded = !cartAdded;
-                                            });
-                                          },
-                                          child: const Text(
-                                            'Agregar al carrito',
+                                              Text(
+                                                '$cantidad',
+                                                style: const TextStyle(
+                                                  fontSize: 24,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    cantidad++;
+                                                  });
+                                                },
+                                                icon: const Icon(Icons.add),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 20),
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              await Provider.of<
+                                                ProductProviders
+                                              >(
+                                                context,
+                                                listen: false,
+                                              ).toggleCartStatus(
+                                                widget.recipesData,
+                                                cantidad,
+                                              );
+                                              Navigator.pop(
+                                                context,
+                                              ); // cerrar el modal
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    "Producto agregado al carrito",
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: const Text(
+                                              'Agregar al carrito',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                            );
-                          },
-                        );
+                              );
+                            },
+                          );
+                        }
                       },
-
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.primary,
                         minimumSize: const Size.fromHeight(60),
@@ -354,9 +306,9 @@ class RecipeDetailsState extends State<RecipeDetails> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Añadir al carrito',
-                        style: TextStyle(
+                      child: Text(
+                        isInCart ? 'Eliminar del carrito' : 'Añadir al carrito',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
