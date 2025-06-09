@@ -9,10 +9,17 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cartProducts = Provider.of<ProductProviders>(context, listen: false);
+
+    if (cartProducts.favoriteRecipes.isEmpty) {
+      cartProducts.fetchCart();
+      print("Se cargó el carrito: ${cartProducts.cartProducts}");
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Consumer<ProductProviders>(
-        builder: (context, recipeProviders, child) {
+        builder: (context, provider, child) {
           double getTotal(Map<ProductModel, int> cartProducts) {
             double total = 0.0;
             cartProducts.forEach((producto, cantidad) {
@@ -21,8 +28,8 @@ class CartScreen extends StatelessWidget {
             return total;
           }
 
-          final cartEntries = recipeProviders.cartProducts.entries.toList();
-          final total = getTotal(recipeProviders.cartProducts);
+          final cartEntries = provider.cartProducts.entries.toList();
+          final total = getTotal(provider.cartProducts);
 
           return cartEntries.isEmpty
               ? Center(child: Text("Ningun producto añadido al carrito"))

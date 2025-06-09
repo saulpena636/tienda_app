@@ -9,14 +9,36 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final favoriteRecipes = Provider.of<ProductProviders>(
+      context,
+      listen: false,
+    );
+
+    if (favoriteRecipes.favoriteRecipes.isEmpty) {
+      favoriteRecipes.fetchFavorites();
+      print("Se cargaron los favoritos ${favoriteRecipes.recipes}");
+    }
+
     //return Center(child: Text("Favoritos"));
     return Scaffold(
       //appBar: AppBar(),
       body: Consumer<ProductProviders>(
-        builder: (context, recipeProviders, child) {
-          final favoriteRecipes = recipeProviders.favoriteRecipes;
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return Center(child: CircularProgressIndicator());
+          } else if (provider.favoriteRecipes.isEmpty) {
+            return Center(child: Text('No hay productos'));
+          }
 
-          return favoriteRecipes.isEmpty
+          return ListView.builder(
+            itemCount: provider.favoriteRecipes.length,
+            itemBuilder: (context, index) {
+              final recipe = provider.favoriteRecipes[index];
+              return FavoriteRecipesCard(recipe: recipe);
+            },
+          );
+
+          /*return favoriteRecipes.isEmpty
               ? Center(child: Text("Sin productos guardados"))
               : ListView.builder(
                 itemCount: favoriteRecipes.length,
@@ -24,7 +46,7 @@ class FavoritesScreen extends StatelessWidget {
                   final recipe = favoriteRecipes[index];
                   return FavoriteRecipesCard(recipe: recipe);
                 },
-              );
+              );*/
         },
       ),
     );

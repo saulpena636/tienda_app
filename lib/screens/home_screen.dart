@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
 
     if (recipesProvider.recipes.isEmpty) {
       recipesProvider.fetchRecipes();
-      print("Se cargaron los productos");
+      print("Se cargaron los productos ${recipesProvider.recipes}");
     }
 
     final colors = Theme.of(context).colorScheme;
@@ -257,7 +257,7 @@ class _FormularioRecetaState extends State<FormularioReceta> {
 
                     try {
                       // Call the saveRecipe function from the provider
-                      success = await recipesProvider.saveRecipe(newRecipe);
+                      success = await recipesProvider.saveProduct(newRecipe);
                     } catch (e) {
                       return; // Exit if there was an error during save
                     }
