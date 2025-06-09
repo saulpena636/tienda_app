@@ -109,7 +109,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
-                    child: Image.network(recipe.imageLink, fit: BoxFit.cover),
+                    child: Image.network(
+                      recipe.mediaUrls.firstWhere(
+                        (url) =>
+                            url.endsWith('.jpg') ||
+                            url.endsWith('.jpeg') ||
+                            url.endsWith('.png') ||
+                            url.endsWith('.avif'),
+                        orElse:
+                            () =>
+                                'https://via.placeholder.com/150', // si no hay imagen
+                      ),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 SizedBox(width: 20, height: 10),
@@ -262,8 +274,9 @@ class _FormularioRecetaState extends State<FormularioReceta> {
                       id: recipesProvider.recipes.length + 3,
                       name: _recipeName.text,
                       precio: double.parse(_recipePrecio.text),
-                      imageLink: _recipeURL.text,
+                      /*imageLink: _recipeURL.text,*/
                       description: _recipeDescription.text,
+                      mediaUrls: [],
                       // Assuming the description is the only step for now
                     );
 

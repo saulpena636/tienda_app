@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 //import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +17,7 @@ class AuthProvider with ChangeNotifier {
       return 'http://localhost:8000'; // Or your domain
     } else if (Platform.isAndroid) {
       // Android Emulator uses 10.0.2.2 to access host localhost
-      return 'http://192.168.0.103:8000';
+      return 'http://10.242.132.136:8000';
     } else if (Platform.isIOS) {
       // iOS Simulator uses localhost or 127.0.0.1
       return 'http://localhost:8000';
@@ -36,7 +38,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String username, String password) async {
     final url = Uri.parse(
-      'http://192.168.0.103:8000/auth/login',
+      'http://10.242.132.136:8000/auth/login',
     ); // Cambia esto en producción
     final response = await http.post(
       url,
@@ -75,7 +77,7 @@ class ProductProviders extends ChangeNotifier {
       return 'http://localhost:8000'; // Or your domain
     } else if (Platform.isAndroid) {
       // Android Emulator uses 10.0.2.2 to access host localhost
-      return 'http://192.168.0.103:8000';
+      return 'http://10.242.132.136:8000';
     } else if (Platform.isIOS) {
       // iOS Simulator uses localhost or 127.0.0.1
       return 'http://localhost:8000';
@@ -275,6 +277,53 @@ class ProductProviders extends ChangeNotifier {
     } catch (e) {
       print('❌ Error al guardar producto: $e');
       return false;
+    }
+  }
+
+  // Ejemplo para seleccionar imágenes y videos
+  Future<List<File>> pickMediaFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.media,
+      allowMultiple: true,
+    );
+
+    if (result != null) {
+      return result.paths.map((path) => File(path!)).toList();
+    } else {
+      return [];
+    }
+  }
+
+  Future<void> uploadProductWithMedia({
+    required String name,
+    required double precio,
+    required String description,
+    required List<File> mediaFiles,
+  }) async {
+    Dio dio = Dio();
+    final formData = FormData.fromMap({
+      'name': name,
+      'precio': precio,
+      'description': description,
+      'media_files': [
+        for (var file in mediaFiles)
+          await MultipartFile.fromFile(
+            file.path,
+            filename: file.path.split('/').last,
+          ),
+      ],
+    });
+
+    final response = await dio.post(
+      'http://10.242.132.136/products',
+      data: formData,
+      options: Options(headers: {"Content-Type": "multipart/form-data"}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Producto subido correctamente");
+    } else {
+      print("Error al subir el producto");
     }
   }
 }

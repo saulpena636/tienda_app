@@ -2,42 +2,43 @@ class ProductModel {
   int id;
   String name;
   double precio;
-  String imageLink;
+  List<String> mediaUrls; // Pueden ser imágenes o videos
   String description;
 
-  //constructor
   ProductModel({
     required this.id,
     required this.name,
     required this.precio,
-    required this.imageLink,
+    required this.mediaUrls,
     required this.description,
   });
 
   factory ProductModel.fromJSON(Map<String, dynamic> json) {
+    const baseUrl = 'http://10.242.132.136:8000/';
     return ProductModel(
       id: json['id'],
       name: json['name'],
       precio: json['precio'],
-      imageLink: json['imageLink'],
+      mediaUrls: List<String>.from(
+        json['media'].map((item) => baseUrl + item['url']),
+      ),
       description: json['description'],
     );
   }
 
-  // conversor a JSON
   Map<String, dynamic> toJSON() {
     return {
       'id': id,
       'name': name,
       'precio': precio,
-      'imageLink': imageLink,
+      'mediaUrls': mediaUrls,
       'description': description,
     };
   }
 
   @override
   String toString() {
-    return 'Recipe(id: $id, name: $name, precio: $precio, imageLink: $imageLink, description: $description)';
+    return 'Product(id: $id, name: $name, precio: $precio, mediaUrls: $mediaUrls, description: $description)';
   }
 }
 
