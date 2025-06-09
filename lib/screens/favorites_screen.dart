@@ -4,20 +4,37 @@ import 'package:tienda_app/models/product_model.dart';
 import 'package:tienda_app/providers/product_providers.dart';
 import 'package:tienda_app/screens/product_details.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final favoriteRecipes = Provider.of<ProductProviders>(
-      context,
-      listen: false,
-    );
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
 
-    if (favoriteRecipes.favoriteRecipes.isEmpty) {
-      favoriteRecipes.fetchFavorites();
-      print("Se cargaron los favoritos ${favoriteRecipes.recipes}");
-    }
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final favoriteRecipes = Provider.of<ProductProviders>(
+        context,
+        listen: false,
+      );
+
+      if (!_initialized && favoriteRecipes.favoriteRecipes.isEmpty) {
+        favoriteRecipes.fetchFavorites();
+        print("Se cargaron los favoritos ${favoriteRecipes.favoriteRecipes}");
+        _initialized = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final favoriteRecipes = Provider.of<ProductProviders>(context);
 
     //return Center(child: Text("Favoritos"));
     return Scaffold(

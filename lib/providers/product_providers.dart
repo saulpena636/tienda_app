@@ -5,6 +5,62 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:tienda_app/models/product_model.dart';
 
+class AuthProvider with ChangeNotifier {
+  String? _token;
+  String? _username;
+  String getBaseUrl() {
+    if (kIsWeb) {
+      // Running in a web browser - assuming server is accessible from browser's perspective
+      // This might need adjustment based on how you host/proxy your API for web
+      return 'http://localhost:8000'; // Or your domain
+    } else if (Platform.isAndroid) {
+      // Android Emulator uses 10.0.2.2 to access host localhost
+      return 'http://192.168.0.103:8000';
+    } else if (Platform.isIOS) {
+      // iOS Simulator uses localhost or 127.0.0.1
+      return 'http://localhost:8000';
+    } else {
+      // Default or other platforms (handle physical devices separately)
+      // For physical devices, you'd need the host machine's actual network IP
+      // e.g., 'http://192.168.1.100:12345'
+      // Returning localhost as a fallback might not work universally
+      return 'http://localhost:8000';
+    }
+  }
+
+  UserModel? user;
+
+  bool get isAuthenticated => _token != null;
+  String? get username => _username;
+  String? get token => _token;
+
+  Future<bool> login(String username, String password) async {
+    final url = Uri.parse(
+      'http://192.168.0.103:8000/auth/login',
+    ); // Cambia esto en producción
+    final response = await http.post(
+      url,
+      body: {'username': username, 'password': password},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      _token = data['access_token'];
+      _username = username;
+      notifyListeners();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void logout() {
+    _token = null;
+    _username = null;
+    notifyListeners();
+  }
+}
+
 class ProductProviders extends ChangeNotifier {
   bool isLoading = false;
 
@@ -19,7 +75,7 @@ class ProductProviders extends ChangeNotifier {
       return 'http://localhost:8000'; // Or your domain
     } else if (Platform.isAndroid) {
       // Android Emulator uses 10.0.2.2 to access host localhost
-      return 'http://10.0.2.2:8000';
+      return 'http://192.168.0.103:8000';
     } else if (Platform.isIOS) {
       // iOS Simulator uses localhost or 127.0.0.1
       return 'http://localhost:8000';
@@ -33,40 +89,33 @@ class ProductProviders extends ChangeNotifier {
   }
 
   Future<void> fetchRecipes() async {
-    isLoading = true;
-    notifyListeners();
-    // Android 10.0.2.2
-    // IOS 127.0.0.1
-    // WEB
+    // NO LLAMES notifyListeners() aquí aún
 
-    final url = Uri.parse('${getBaseUrl()}/products');
-
-    print("Fetch Products");
     try {
-      print("Trying");
+      isLoading = true;
+
+      final url = Uri.parse('${getBaseUrl()}/products');
+      print("Fetch Products");
 
       final response = await http.get(url);
-
       print("response status ${response.statusCode}");
       print("respuesta ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        //return data['recipes'];
         recipes = List<ProductModel>.from(
           data.map((product) => ProductModel.fromJSON(product)),
         );
       } else {
         print('Error ${response}');
-        //return [];
         recipes = [];
       }
     } catch (e) {
-      print("Errro in request $e");
-      //return [];
+      print("Error in request $e");
       recipes = [];
     } finally {
       isLoading = false;
-      notifyListeners();
+      notifyListeners(); // ✅ Solo aquí, después de que todo terminó
     }
   }
 

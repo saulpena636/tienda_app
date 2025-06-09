@@ -4,6 +4,7 @@ import 'package:tienda_app/providers/product_providers.dart';
 import 'package:tienda_app/screens/favorites_screen.dart';
 import 'package:tienda_app/screens/cart_screen.dart';
 import 'package:tienda_app/screens/home_screen.dart';
+import 'package:tienda_app/screens/login_screen.dart'; // Asegúrate de tener este archivo
 
 void main() {
   runApp(const MyApp());
@@ -12,21 +13,30 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ProductProviders())],
-      child: MaterialApp(
-        title: 'Tienda',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Color.fromARGB(0, 77, 160, 255),
-          ), // Azul como base
-          useMaterial3: true, // O false si estás usando Material 2
-        ),
-        home: Tienda(),
-        debugShowCheckedModeBanner: false,
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProviders()),
+      ],
+      child: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          return MaterialApp(
+            title: 'Tienda',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color.fromARGB(0, 77, 160, 255),
+              ),
+              useMaterial3: true,
+            ),
+            home:
+                authProvider.isAuthenticated
+                    ? const Tienda()
+                    : const LoginScreen(),
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
     );
   }
@@ -63,20 +73,18 @@ class Tienda extends StatelessWidget {
               ),
             ],
           ),
-
-          bottom: TabBar(
+          bottom: const TabBar(
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
-            tabs: <Widget>[
+            tabs: [
               Tab(icon: Icon(Icons.home), text: 'Inicio'),
               Tab(icon: Icon(Icons.shopping_cart), text: 'Carrito'),
               Tab(icon: Icon(Icons.favorite), text: 'Guardados'),
             ],
           ),
         ),
-        body: //HomeScreen(),
-            TabBarView(
+        body: const TabBarView(
           children: [HomeScreen(), CartScreen(), FavoritesScreen()],
         ),
       ),

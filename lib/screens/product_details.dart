@@ -192,6 +192,21 @@ class RecipeDetailsState extends State<RecipeDetails> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        final auth = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        );
+
+                        if (!auth.isAuthenticated) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Inicia sesión para añadir al carrito",
+                              ),
+                            ),
+                          );
+                          return;
+                        }
                         if (isInCart) {
                           // Si ya está en el carrito, eliminarlo directamente
                           Provider.of<ProductProviders>(

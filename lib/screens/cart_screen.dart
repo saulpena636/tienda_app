@@ -4,17 +4,40 @@ import 'package:tienda_app/models/product_model.dart';
 import 'package:tienda_app/providers/product_providers.dart';
 import 'package:tienda_app/screens/product_details.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cartProducts = Provider.of<ProductProviders>(context, listen: false);
+  State<CartScreen> createState() => _CartScreenState();
+}
 
-    if (cartProducts.favoriteRecipes.isEmpty) {
-      cartProducts.fetchCart();
-      print("Se cargó el carrito: ${cartProducts.cartProducts}");
-    }
+class _CartScreenState extends State<CartScreen> {
+  /*@override
+  Widget build(BuildContext context) {
+    final cartProducts = Provider.of<ProductProviders>(context, listen: false);*/
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cartProducts = Provider.of<ProductProviders>(
+        context,
+        listen: false,
+      );
+
+      if (!_initialized && cartProducts.cartProducts.isEmpty) {
+        cartProducts.fetchCart();
+        print("Se cargó el carrito: ${cartProducts.cartProducts}");
+        _initialized = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cartProducts = Provider.of<ProductProviders>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,

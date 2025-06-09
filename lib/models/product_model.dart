@@ -40,3 +40,14 @@ class ProductModel {
     return 'Recipe(id: $id, name: $name, precio: $precio, imageLink: $imageLink, description: $description)';
   }
 }
+
+class UserModel {
+  String username;
+  String token;
+
+  UserModel({required this.username, required this.token});
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(username: json['username'], token: json['access_token']);
+  }
+}

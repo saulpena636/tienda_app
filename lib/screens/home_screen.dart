@@ -5,20 +5,37 @@ import 'package:tienda_app/screens/product_details.dart';
 
 import '../models/product_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final recipesProvider = Provider.of<ProductProviders>(
-      context,
-      listen: false,
-    );
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-    if (recipesProvider.recipes.isEmpty) {
-      recipesProvider.fetchRecipes();
-      print("Se cargaron los productos ${recipesProvider.recipes}");
-    }
+class _HomeScreenState extends State<HomeScreen> {
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final recipesProvider = Provider.of<ProductProviders>(
+        context,
+        listen: false,
+      );
+
+      if (!_initialized && recipesProvider.recipes.isEmpty) {
+        print("Se cargaron los productos ${recipesProvider.recipes}");
+        recipesProvider.fetchRecipes();
+        _initialized = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final recipesProvider = Provider.of<ProductProviders>(context);
 
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
