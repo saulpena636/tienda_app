@@ -40,6 +40,9 @@ class RecipeDetailsState extends State<RecipeDetails> {
       listen: true, // para que se reconstruya cuando cambia
     ).cartProducts.containsKey(widget.recipesData);
 
+    print("PRODUCTO: ${widget.recipesData.name}");
+  print("MEDIA URLS: ${widget.recipesData.mediaUrls}");
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colors.primary,
@@ -112,7 +115,19 @@ class RecipeDetailsState extends State<RecipeDetails> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-              child: MediaCarousel(mediaUrls: widget.recipesData.mediaUrls),
+              child: MediaCarousel(
+  mediaUrls: widget.recipesData.mediaUrls.where((url) {
+    return url.endsWith('.jpg') ||
+           url.endsWith('.jpeg') ||
+           url.endsWith('.png') ||
+           url.endsWith('.gif') ||
+           url.endsWith('.webp') ||
+           url.endsWith('.avif') ||
+           url.endsWith('.mp4') ||
+           url.endsWith('.webm') ||
+           url.endsWith('.mov');
+  }).toList(),
+),
             ),
             SizedBox(height: 10),
             Padding(
@@ -338,44 +353,23 @@ class MediaCarousel extends StatefulWidget {
   const MediaCarousel({super.key, required this.mediaUrls});
 
   @override
-  // ignore: library_private_types_in_public_api
   _MediaCarouselState createState() => _MediaCarouselState();
 }
 
 class _MediaCarouselState extends State<MediaCarousel> {
   final PageController _pageController = PageController();
-  final List<VideoPlayerController?> _videoControllers = [];
+  late final List<VideoPlayerController?> _videoControllers;
 
   @override
   void initState() {
     super.initState();
-    _initVideos();
-  }
-
-  void _initVideos() {
-    for (var url in widget.mediaUrls) {
-      if (url.endsWith('.mp4') ||
-          url.endsWith('.webm') ||
-          url.endsWith('.mov')) {
-        // ignore: deprecated_member_use
+    _videoControllers = widget.mediaUrls.map((url) {
+      if (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov')) {
         final controller = VideoPlayerController.network(url);
-        controller
-            .initialize()
-            .then((_) {
-              if (controller.value.isInitialized) {
-                controller.setLooping(true);
-                controller.play();
-                setState(() {}); // actualiza UI cuando esté listo
-              }
-            })
-            .catchError((e) {
-              print("Error al inicializar video: $e");
-            });
-        _videoControllers.add(controller);
-      } else {
-        _videoControllers.add(null); // no es video
+        return controller;
       }
-    }
+      return null;
+    }).toList();
   }
 
   @override
@@ -390,25 +384,38 @@ class _MediaCarouselState extends State<MediaCarousel> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1, // cuadrado
+      aspectRatio: 1,
       child: PageView.builder(
         controller: _pageController,
         itemCount: widget.mediaUrls.length,
         itemBuilder: (context, index) {
           final url = widget.mediaUrls[index];
-          final videoController = _videoControllers[index];
+          final controller = _videoControllers[index];
 
-          if (videoController != null && videoController.value.isInitialized) {
-            return VideoPlayer(videoController);
-          } else if (videoController != null) {
-            return Center(child: CircularProgressIndicator());
+          if (controller != null) {
+            return FutureBuilder(
+              future: controller.initialize(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  controller.setLooping(true);
+                  controller.play();
+                  return AspectRatio(
+                    aspectRatio: controller.value.aspectRatio,
+                    child: VideoPlayer(controller),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error cargando video: ${snapshot.error}"));
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              },
+            );
           } else {
             return Image.network(
               url,
               fit: BoxFit.cover,
-              errorBuilder:
-                  (context, error, stackTrace) =>
-                      Center(child: Text('Error cargando imagen $error')),
+              errorBuilder: (context, error, stackTrace) =>
+                  Center(child: Text('Error cargando imagen')),
             );
           }
         },
@@ -416,26 +423,3 @@ class _MediaCarouselState extends State<MediaCarousel> {
     );
   }
 }
-
-// class RecipeDetails extends StatelessWidget {
-//   final String recipeName;
-
-//   const RecipeDetails({super.key, required this.recipeName});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final colors = Theme.of(context).colorScheme;
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(recipeName),
-//         leading: IconButton(
-//           color: colors.primary,
-//           onPressed: () {
-//             Navigator.pop(context);
-//           },
-//           icon: Icon(Icons.arrow_back),
-//         ),
-//       ),
-//     );
-//   }
-// }

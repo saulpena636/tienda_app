@@ -14,7 +14,7 @@ class ProductModel {
   });
 
   factory ProductModel.fromJSON(Map<String, dynamic> json) {
-    const baseUrl = 'http://10.242.132.136:8000/';
+    const baseUrl = 'http://10.10.7.40:8000/';
     return ProductModel(
       id: json['id'],
       name: json['name'],

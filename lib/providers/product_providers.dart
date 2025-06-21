@@ -17,7 +17,7 @@ class AuthProvider with ChangeNotifier {
       return 'http://localhost:8000'; // Or your domain
     } else if (Platform.isAndroid) {
       // Android Emulator uses 10.0.2.2 to access host localhost
-      return 'http://10.242.132.136:8000';
+      return 'http://10.10.7.40:8000';
     } else if (Platform.isIOS) {
       // iOS Simulator uses localhost or 127.0.0.1
       return 'http://localhost:8000';
@@ -38,7 +38,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String username, String password) async {
     final url = Uri.parse(
-      'http://10.242.132.136:8000/auth/login',
+      'http://10.10.7.40:8000/auth/login',
     ); // Cambia esto en producción
     final response = await http.post(
       url,
@@ -77,7 +77,7 @@ class ProductProviders extends ChangeNotifier {
       return 'http://localhost:8000'; // Or your domain
     } else if (Platform.isAndroid) {
       // Android Emulator uses 10.0.2.2 to access host localhost
-      return 'http://10.242.132.136:8000';
+      return 'http://10.10.7.40:8000';
     } else if (Platform.isIOS) {
       // iOS Simulator uses localhost or 127.0.0.1
       return 'http://localhost:8000';
@@ -315,7 +315,7 @@ class ProductProviders extends ChangeNotifier {
     });
 
     final response = await dio.post(
-      'http://10.242.132.136/products',
+      'http://10.10.7.40:8000/products',
       data: formData,
       options: Options(headers: {"Content-Type": "multipart/form-data"}),
     );
